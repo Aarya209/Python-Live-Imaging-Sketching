@@ -3,9 +3,37 @@ import numpy as np
 import turtle
 import os
 import time
-# Path to the image file saved in the project folder
-IMAGE_PATH = "sketch_image.png"
+def select_image():
+    """Find all image files in the current folder and let the user pick one."""
+    supported_extensions = ('.jpg', '.jpeg', '.png')
+    images = [f for f in os.listdir('.') if f.lower().endswith(supported_extensions)]
+    
+    if not images:
+        print("Error: No image files (.jpg, .jpeg, .png) found in the folder!")
+        return None
+    
+    # If only one image exists, select it automatically
+    if len(images) == 1:
+        print(f"Found image: '{images[0]}'")
+        return images[0]
+    
+    print("\n--- Available Sketches ---")
+    for i, img_name in enumerate(images, 1):
+        print(f"{i}. {img_name}")
+    
+    choice = input("\nEnter the number of the image you want to sketch: ")
+    try:
+        index = int(choice) - 1
+        if 0 <= index < len(images):
+            return images[index]
+    except ValueError:
+        pass
+        
+    print("Invalid choice. Selecting the first image by default.")
+    return images[0]
 
+# Automatically set IMAGE_PATH using the menu above
+IMAGE_PATH = select_image()
 # Animation Controls
 UPDATE_EVERY = 2      # Refresh screen every N points (Lower = smoother/slower live drawing)
 DRAW_DELAY = 0.001    # Delay per point in seconds (increase for slower human-like drawing)
@@ -44,10 +72,9 @@ def build_contours(contours, hierarchy):
     # Sort shapes: Outer shapes/larger depth drawn systematically
     result.sort(key=lambda item: item['depth'])
     return result
-
 def main():
-    if not os.path.exists(IMAGE_PATH):
-        print(f"Error: Could not find '{IMAGE_PATH}'. Please make sure the image is in the same folder as this script!")
+    if not IMAGE_PATH or not os.path.exists(IMAGE_PATH):
+        print(f"Error: Could not load image. Please make sure image files exist in this folder!")
         return
 
     # Load image in grayscale format
@@ -80,7 +107,7 @@ def main():
     # Setup Turtle Screen
     screen = turtle.Screen()
     screen.setup(width + 120, height + 120)
-    screen.title("Maa Durga — Slow Live Sketching")
+    screen.title(f"Live Sketching — {IMAGE_PATH}")
     screen.bgcolor("white")
 
     # Setup Turtle Drawer Pen
@@ -95,7 +122,7 @@ def main():
     offset_x = -width // 2
     offset_y = height // 2
 
-    print("Starting slow live drawing...")
+    print(f"Starting slow live drawing of '{IMAGE_PATH}'...")
     start_time = time.time()
 
     total_points = sum(len(shape['points']) for shape in shapes)
