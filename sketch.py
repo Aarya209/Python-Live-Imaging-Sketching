@@ -39,6 +39,7 @@ IMAGE_PATH = select_image()
 UPDATE_EVERY = 1      
 DRAW_DELAY = 0.003    
 PEN_SIZE = 1.0
+PALETTE = ["#00f0ff", "#ff007f", "#39ff14", "#ff00ff", "#00ffff", "#ffff00"]
 
 def build_contours_and_fills(img):
     _, thresh = cv2.threshold(img, 180, 255, cv2.THRESH_BINARY_INV)
@@ -92,7 +93,7 @@ def main():
         return
 
     height, width = img.shape
-    max_dim = 650
+    max_dim = 1200
     scale = max_dim / float(max(height, width))
     new_width = int(width * scale)
     new_height = int(height * scale)
@@ -104,31 +105,31 @@ def main():
     shapes = build_contours_and_fills(blurred)
 
     screen = turtle.Screen()
-    screen.setup(width + 100, height + 100)
+    screen.setup(width=1.0, height=1.0)
     screen.title(f"Live Sketching — {IMAGE_PATH}")
-    screen.bgcolor("white")
+    screen.bgcolor("#0a0a12")
 
     turtle_drawer = turtle.Turtle()
     turtle_drawer.speed(0)
-    turtle_drawer.pensize(PEN_SIZE)
+    turtle_drawer.pensize(1.5)
     turtle_drawer.hideturtle()
 
     screen.tracer(0)
 
     offset_x = -width // 2
-    offset_y = height // 2
+    offset_y = (height // 2) + 200
 
     print(f"Starting live drawing of '{IMAGE_PATH}'...")
     start_time = time.time()
     current_point = 0
 
     try:
-        for shape in shapes:
+        for idx,shape in enumerate(shapes):
             points = shape['points']
             fill_color = shape['fill']
             is_solid = shape['is_solid']
 
-            turtle_drawer.pencolor("black")
+            turtle_drawer.pencolor(PALETTE[idx % len(PALETTE)])
             turtle_drawer.fillcolor(fill_color)
 
             start_pt = points[0]
